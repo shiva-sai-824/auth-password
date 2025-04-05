@@ -1,0 +1,81 @@
+name: build android
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    # do not run in PRs
+    if: ${{ github.head_ref == '' }}
+
+    strategy:
+      matrix:
+        flavor: ['playstore', 'playstoredev', 'samsungapps', 'sideload', 'huawei', 'amazon']
+        shouldRelease:
+          - ${{ contains(github.ref, 'stable') || startsWith(github.ref, 'refs/heads/v') }}
+        isMain:
+          - ${{ contains(github.ref, 'main') }}
+        exclude:
+          - shouldRelease: false
+            flavor: amazon
+          - shouldRelease: false
+            flavor: huawei
+          - shouldRelease: false
+            flavor: samsungapps
+          - shouldRelease: false
+            flavor: playstore
+
+
+      fail-fast: true
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        echo "shouldRelease: ${{matrix.shouldRelease}} - isMain: ${{matrix.isMain}} - ref: ${{github.ref}}"
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+    - name: Postdeploy
+      env:
+        BLACKBOX_SECRET: ${{ secrets.BLACKBOX_SECRET_KEY }}
+      run: authpass/_tools/postdeploy.sh
+    - name: debug android directory
+      run: echo "${ANDROID_SDK_ROOT} , ${ANDROID_HOME}" , Running in ${{ github.ref }}
+    - uses: ruby/setup-ruby@v1
+      if: ${{ startsWith(matrix.flavor, 'playstore') }}
+      with:
+        ruby-version: '3.3'
+    # The last version of bundler (>= 0) to support your Ruby & RubyGems was 2.4.22.
+    - run: gem install bundler -v 2.4.22
+      if: ${{ startsWith(matrix.flavor, 'playstore') }}
+    - name: install ndk
+#      run: 'yes | sdkmanager "ndk;21.0.6113669"'
+      run: echo "y" | sudo ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.0.6113669" --sdk_root=${ANDROID_SDK_ROOT}
+    - name: ci-install-deps
+      run: "./authpass/_tools/ci-install-deps.sh android"
+    - name: build ${{ matrix.flavor }} apk
+      id: buildapk
+      env:
+        GIT_AUTHOR_NAME: 'Github Action CI'
+        GIT_AUTHOR_EMAIL: 'herbert.github.ci@codeux.design'
+        GIT_COMMITTER_NAME: 'Github Action CI'
+        GIT_COMMITTER_EMAIL: 'herbert.github.ci@codeux.design'
+#        AUTHPASS_SKIP_FASTLANE: ${{ github.ref != 'refs/heads/master' }}
+      run: |
+        export JAVA_HOME="$JAVA_HOME_17_X64"
+        ./authpass/_tools/ci-release.sh android ${{ matrix.flavor }}
+    - name: upload artifact
+      if: ${{ steps.buildapk.outputs.outputfilename != null }}
+      run: ./authpass/_tools/upload-artifact.sh authpass/${{ steps.buildapk.outputs.outputpath }}
+    - uses: actions/upload-artifact@v3
+      if: ${{ steps.buildapk.outputs.outputfilename != null }}
+      with:
+        name: ${{ steps.buildapk.outputs.outputfilename }}
+        path: authpass/${{ steps.buildapk.outputs.outputpath }}

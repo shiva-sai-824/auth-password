@@ -1,0 +1,16 @@
+<p>Pidä kirjaa kaikista salasanoistasi helposti ja turvallisesti!</p>
+
+<p>AuthPass on erillinen salasanojen hallintaohjelma, joka tukee suosittua ja hyväksi havaittua Keepass (kdbx) muotoa. 
+Tallenna salasanasi, jaa ne kaikkien laitteidesi kesken ja löydä ne helposti aina, kun sinun on kirjauduttava sisään.</p>
+
+<ul>
+<li>Kaikki salasanasi yhdessä paikassa.<li>
+<li>Luo turvalliset satunnaiset salasanat jokaiselle tilillesi.</li>
+<li>Nopea lukitus suojattu biometrisellä lukolla (vain Android tällä hetkellä)</li>
+<li>Pidä kirjaa tileistäsi verkossa.</li>
+<li>Sovellus on saatavilla Macille, iOS:lle, Androidille, Linuxille ja Windowsille.</li>
+<li>Avoin lähdekoodi on saatavilla https://github.com/authpass/authpass/</li>
+<li>Lahjoitukset ovat tervetulleita ja kannustavia ;-) (Aina etsitään kehittäjiä, kääntäjiä, dokumenttien kirjoittajia, UI suunnittelijoita jne. :) ), joten liity meidän discord kanavallemme.</li>
+</ul>
+
+<p>Liity discord kanavallemme osoitteessa https://authpass.app/go/discord - Jos sinulla on sovelluksessa ongelmia, tai annat palautetta, jne. Tai haluat vain viettää aikaa.</p>

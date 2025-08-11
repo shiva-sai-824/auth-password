@@ -20,7 +20,7 @@ jobs:
           PASSWORD: authpa55
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - name: ci-install-deps
